@@ -2,12 +2,14 @@
 
 function _rootgit_eval_gitter()
 {
-	if [[ -z $GITTER ]]; then
+	echo "Eval start"
+	if [[ -z "$GITTER" ]]; then
 		GITTER=`who am i | awk '{ print $1; }'`
 		if [[ "$GITTER" = "root" ]]; then
 			unset GITTER
 		fi
 	fi
+	echo "Eval end"
 }
 
 function _rootgit_prompt_gitter()
@@ -21,8 +23,9 @@ function _rootgit_prompt_gitter()
 
 function _rootgit_try_git_commit()
 {
+	echo "Try commit start"
 	_ROOTGIT_COMMIT_PATTERN="no author found"
-	_ROOTGIT_COMMIT_RET=`git commit "$@" --author "$GITTER"`
+	_ROOTGIT_COMMIT_RET="$(\git commit "$@" --author "$GITTER")"
 	echo "${_ROOTGIT_COMMIT_RET}"
 	if [[ $_ROOTGIT_COMMIT_RET =~ $_ROOTGIT_COMMIT_PATTERN ]]; then
 		unset _ROOTGIT_COMMIT_PATTERN
@@ -33,20 +36,22 @@ function _rootgit_try_git_commit()
 		unset _ROOTGIT_COMMIT_RET
 		return 0
 	fi
+	echo "Try commit end"
 }
 
 function rootgit()
 {
-	if [ "$1" = "commit" ]; then
+	if [[ "$1" = "commit" ]]; then
 		_rootgit_eval_gitter
-		if [[ -n "$GITTER" ]]; then
+		if [[ -z "$GITTER" ]]; then
+			_rootgit_prompt_gitter
+		fi
+		_rootgit_try_git_commit "${@:2}"
+		if [[ $? -ne 0 ]]; then
+			_rootgit_prompt_gitter
 			_rootgit_try_git_commit "${@:2}"
-			if [[ $? -ne 0 ]]; then
-				_rootgit_prompt_gitter
-				_rootgit_try_git_commit "${@:2}"
-			fi
 		fi
 	else
-		git "$@"
+		\git "$@"
 	fi
 }
