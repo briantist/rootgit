@@ -1,0 +1,41 @@
+#!/bin/bash
+
+function _rootgit_eval_gitter()
+{
+	if [[ -z $GITTER ]]; then
+		GITTER=`who am i | awk '{ print $1; }'`
+		if [[ "$GITTER" = "root" ]]; then
+			unset GITTER
+		fi
+	fi
+}
+
+function _rootgit_prompt_gitter()
+{
+	GITTERPATTERN="^[^<]+<[^@]+@[^>]+>$"
+	until [[ -n $GITTER && $GITTER =~ $GITTERPATTERN ]]; do
+		read -e -i "$GITTER" -p "Please identify yourself in the format: First Last <user@domain.tld>" GITTER
+	done
+}
+
+function _rootgit_try_git_commit()
+{
+	git commit "$@" --author "$GITTER"
+	return $?
+}
+
+function rootgit()
+{
+	if [ "$1" = "commit" ]; then
+		_rootgit_eval_gitter
+		if [[ -n "$GITTER" ]]; then
+			_rootgit_try_git_commit "${@:2}"
+			if [[ $? -ne 0 ]]; then
+				_rootgit_prompt_gitter
+				_rootgit_try_git_commit "${@:2}"
+			fi
+		fi
+	else
+		git "$@"
+	fi
+}
