@@ -12,16 +12,27 @@ function _rootgit_eval_gitter()
 
 function _rootgit_prompt_gitter()
 {
-	GITTERPATTERN="^[^<]+<[^@]+@[^>]+>$"
-	until [[ -n $GITTER && $GITTER =~ $GITTERPATTERN ]]; do
+	_ROOTGIT_GITTERPATTERN="^[^<]+<[^@]+@[^>]+>$"
+	until [[ -n $GITTER && $GITTER =~ $_ROOTGIT_GITTERPATTERN ]]; do
 		read -e -i "$GITTER" -p "Please identify yourself in the format: First Last <user@domain.tld>" GITTER
 	done
+	unset _ROOTGIT_GITTERPATTERN
 }
 
 function _rootgit_try_git_commit()
 {
-	git commit "$@" --author "$GITTER"
-	return $?
+	_ROOTGIT_COMMIT_PATTERN="no author found"
+	_ROOTGIT_COMMIT_RET=`git commit "$@" --author "$GITTER"`
+	echo "${_ROOTGIT_COMMIT_RET}"
+	if [[ $_ROOTGIT_COMMIT_RET =~ $_ROOTGIT_COMMIT_PATTERN ]]; then
+		unset _ROOTGIT_COMMIT_PATTERN
+		unset _ROOTGIT_COMMIT_RET
+		return 1
+	else
+		unset _ROOTGIT_COMMIT_PATTERN
+		unset _ROOTGIT_COMMIT_RET
+		return 0
+	fi
 }
 
 function rootgit()
