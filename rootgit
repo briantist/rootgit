@@ -2,14 +2,12 @@
 
 function _rootgit_eval_gitter()
 {
-	echo "Eval start"
 	if [[ -z "$GITTER" ]]; then
 		GITTER=`who am i | awk '{ print $1; }'`
 		if [[ "$GITTER" = "root" ]]; then
 			unset GITTER
 		fi
 	fi
-	echo "Eval end"
 }
 
 function _rootgit_prompt_gitter()
@@ -23,7 +21,6 @@ function _rootgit_prompt_gitter()
 
 function _rootgit_try_git_commit()
 {
-	echo "Try commit start"
 	_ROOTGIT_COMMIT_PATTERN="no author found"
 	_ROOTGIT_COMMIT_RET="$(\git commit "$@" --author "$GITTER")"
 	echo "${_ROOTGIT_COMMIT_RET}"
@@ -36,7 +33,6 @@ function _rootgit_try_git_commit()
 		unset _ROOTGIT_COMMIT_RET
 		return 0
 	fi
-	echo "Try commit end"
 }
 
 function rootgit()
