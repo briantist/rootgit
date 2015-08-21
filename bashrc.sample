@@ -1,0 +1,8 @@
+# .bashrc
+
+# rootgit
+
+if [ -r ~/rootgit/rootgit ]; then
+	. ~/rootgit/rootgit
+	alias git='rootgit'
+fi
